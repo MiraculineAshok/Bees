@@ -3,7 +3,13 @@
 // Function to start interview - redirect to interview page (global function)
 function startInterview() {
     console.log('Starting interview...');
-    window.location.href = '/interview';
+    console.log('Current URL:', window.location.href);
+    console.log('Redirecting to /interview...');
+    
+    // Add a small delay to see the console message
+    setTimeout(() => {
+        window.location.href = '/interview';
+    }, 100);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -46,11 +52,20 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Function to display user information after login
     function displayUserInfo(userData) {
+        console.log('displayUserInfo called with:', userData);
         const userNameElement = document.getElementById('user-name');
         const loginBtn = document.getElementById('login-btn');
         const ctaBtn = document.getElementById('cta-login-btn');
         const startInterviewBtn = document.getElementById('start-interview-btn');
         const interviewDashboard = document.getElementById('interview-dashboard');
+        
+        console.log('Elements found:', {
+            userNameElement: !!userNameElement,
+            loginBtn: !!loginBtn,
+            ctaBtn: !!ctaBtn,
+            startInterviewBtn: !!startInterviewBtn,
+            interviewDashboard: !!interviewDashboard
+        });
         
         if (userData && userData.name) {
             // Show user name and start interview button, hide login button
@@ -59,6 +74,11 @@ document.addEventListener('DOMContentLoaded', function() {
             startInterviewBtn.classList.remove('hidden');
             loginBtn.classList.add('hidden');
             ctaBtn.classList.add('hidden');
+            
+            console.log('Button visibility updated:', {
+                startInterviewBtnHidden: startInterviewBtn.classList.contains('hidden'),
+                loginBtnHidden: loginBtn.classList.contains('hidden')
+            });
             
             // Show interview dashboard
             if (interviewDashboard) {
