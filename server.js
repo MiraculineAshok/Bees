@@ -251,6 +251,11 @@ app.get('/interview', (req, res) => {
   res.sendFile(path.join(__dirname, 'interview.html'));
 });
 
+// Admin page route
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
 // Database API endpoints
 app.get('/api/users', (req, res) => {
   try {

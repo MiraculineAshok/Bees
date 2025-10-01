@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Students Database</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .students-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .students-table th,
+        .students-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .students-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .students-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .zeta-id {
+            font-family: monospace;
+            background: #e9ecef;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .refresh-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .refresh-btn:hover {
+            background: #5a6fd8;
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-btn">← Back to Home</a>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🐝 Students Database</h1>
+            <p>Admin Panel - View All Students</p>
+        </div>
+        
+        <div class="content">
+            <button class="refresh-btn" id="refresh-btn">🔄 Refresh Data</button>
+            
+            <div class="stats" id="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-students">-</div>
+                    <div class="stat-label">Total Students</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="total-users">-</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+            </div>
+
+            <div id="loading" class="loading">
+                Loading students data...
+            </div>
+
+            <div id="error" class="error hidden"></div>
+
+            <table class="students-table hidden" id="students-table">
+                <thead>
+                    <tr>
+                        <th>Zeta ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Address</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody id="students-tbody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        async function loadData() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const studentsTable = document.getElementById('students-table');
+            const stats = document.getElementById('stats');
+            
+            loading.classList.remove('hidden');
+            error.classList.add('hidden');
+            studentsTable.classList.add('hidden');
+            stats.classList.add('hidden');
+
+            try {
+                // Load students data
+                const studentsResponse = await fetch('/api/students');
+                const studentsData = await studentsResponse.json();
+
+                // Load users data
+                const usersResponse = await fetch('/api/users/count');
+                const usersData = await usersResponse.json();
+
+                if (studentsData.success) {
+                    displayStudents(studentsData.students);
+                    document.getElementById('total-students').textContent = studentsData.count;
+                } else {
+                    throw new Error('Failed to load students data');
+                }
+
+                if (usersData.success) {
+                    document.getElementById('total-users').textContent = usersData.count;
+                }
+
+                loading.classList.add('hidden');
+                studentsTable.classList.remove('hidden');
+                stats.classList.remove('hidden');
+
+            } catch (err) {
+                console.error('Error loading data:', err);
+                loading.classList.add('hidden');
+                error.classList.remove('hidden');
+                error.textContent = 'Error loading data: ' + err.message;
+            }
+        }
+
+        function displayStudents(students) {
+            const tbody = document.getElementById('students-tbody');
+            tbody.innerHTML = '';
+
+            if (students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">No students found</td></tr>';
+                return;
+            }
+
+            students.forEach(student => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><span class="zeta-id">${student.zeta_id}</span></td>
+                    <td>${student.first_name} ${student.last_name}</td>
+                    <td>${student.email}</td>
+                    <td>${student.phone || '-'}</td>
+                    <td>${student.address || '-'}</td>
+                    <td>${new Date(student.created_at).toLocaleDateString()}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Event listeners
+        document.getElementById('refresh-btn').addEventListener('click', loadData);
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>
