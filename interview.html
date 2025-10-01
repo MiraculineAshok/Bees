@@ -182,7 +182,7 @@
     </style>
 </head>
 <body>
-    <button class="back-btn" onclick="goBack()">← Back to Home</button>
+    <button class="back-btn" id="back-home-btn">← Back to Home</button>
     
     <div class="container">
         <div class="logo">🐝 Bees</div>
@@ -263,9 +263,6 @@
     <script>
         let currentStudent = null;
 
-        function goBack() {
-            window.location.href = '/';
-        }
 
         async function lookupStudent() {
             const zetaId = document.getElementById('zeta-id').value.trim();
@@ -416,6 +413,21 @@
             if (e.key === 'Enter') {
                 lookupStudent();
             }
+        });
+
+        // Add event listener for back button
+        document.getElementById('back-home-btn').addEventListener('click', function() {
+            console.log('Back to home clicked');
+            window.location.href = '/';
+        });
+
+        // Initialize page - make sure no automatic loading happens
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Interview page loaded');
+            // Reset to initial state
+            showSection('zeta-lookup-section');
+            hideMessage('lookup-message');
+            document.getElementById('zeta-id').value = '';
         });
     </script>
 </body>
