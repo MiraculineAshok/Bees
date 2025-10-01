@@ -138,3 +138,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Log when the page is fully loaded
     console.log('All event listeners attached successfully');
 });
+
+// Function to start interview - redirect to interview page
+function startInterview() {
+    window.location.href = '/interview';
+}

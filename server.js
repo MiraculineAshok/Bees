@@ -246,6 +246,11 @@ app.get('/getCode', (req, res) => {
   });
 });
 
+// Interview page route
+app.get('/interview', (req, res) => {
+  res.sendFile(path.join(__dirname, 'interview.html'));
+});
+
 // Database API endpoints
 app.get('/api/users', (req, res) => {
   try {
