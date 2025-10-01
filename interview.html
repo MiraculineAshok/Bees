@@ -265,8 +265,12 @@
 
 
         async function lookupStudent() {
+            console.log('lookupStudent function called');
             const zetaId = document.getElementById('zeta-id').value.trim();
+            console.log('Zeta ID entered:', zetaId);
+            
             if (!zetaId) {
+                console.log('No Zeta ID provided, showing error');
                 showMessage('lookup-message', 'Please enter a Zeta ID', 'error');
                 return;
             }
@@ -274,8 +278,16 @@
             const lookupBtn = document.getElementById('lookup-btn-text');
             const lookupLoading = document.getElementById('lookup-loading');
             
-            lookupBtn.classList.add('hidden');
-            lookupLoading.classList.remove('hidden');
+            console.log('Lookup button element:', lookupBtn);
+            console.log('Loading element:', lookupLoading);
+            
+            if (lookupBtn && lookupLoading) {
+                console.log('Hiding lookup button, showing loading');
+                lookupBtn.classList.add('hidden');
+                lookupLoading.classList.remove('hidden');
+            } else {
+                console.error('Lookup button or loading element not found!');
+            }
 
             try {
                 const response = await fetch(`/api/students/zeta/${encodeURIComponent(zetaId)}`);
@@ -291,10 +303,17 @@
                     showSection('student-form-section');
                 }
             } catch (error) {
+                console.error('Error in lookupStudent:', error);
                 showMessage('lookup-message', 'Error looking up student. Please try again.', 'error');
             } finally {
-                lookupBtn.classList.remove('hidden');
-                lookupLoading.classList.add('hidden');
+                console.log('Resetting button states - hiding loading, showing button');
+                if (lookupBtn && lookupLoading) {
+                    lookupBtn.classList.remove('hidden');
+                    lookupLoading.classList.add('hidden');
+                    console.log('Button states reset successfully');
+                } else {
+                    console.error('Cannot reset button states - elements not found');
+                }
             }
         }
 
@@ -350,13 +369,21 @@
         }
 
         function showSection(sectionId) {
+            console.log('showSection called with:', sectionId);
             // Hide all sections
             document.getElementById('zeta-lookup-section').classList.add('hidden');
             document.getElementById('student-info-section').classList.add('hidden');
             document.getElementById('student-form-section').classList.add('hidden');
             
             // Show the requested section
-            document.getElementById(sectionId).classList.remove('hidden');
+            const targetSection = document.getElementById(sectionId);
+            console.log('Target section element:', targetSection);
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+                console.log('Section shown successfully:', sectionId);
+            } else {
+                console.error('Target section not found:', sectionId);
+            }
         }
 
         function showMessage(elementId, message, type) {
@@ -415,19 +442,41 @@
             }
         });
 
-        // Add event listener for back button
-        document.getElementById('back-home-btn').addEventListener('click', function() {
-            console.log('Back to home clicked');
-            window.location.href = '/';
-        });
-
         // Initialize page - make sure no automatic loading happens
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Interview page loaded');
+            console.log('Interview page loaded - DOMContentLoaded fired');
+            
+            // Add event listener for back button
+            const backBtn = document.getElementById('back-home-btn');
+            console.log('Back button element:', backBtn);
+            
+            if (backBtn) {
+                backBtn.addEventListener('click', function() {
+                    console.log('Back to home clicked - event listener working');
+                    window.location.href = '/';
+                });
+                console.log('Back button event listener added successfully');
+            } else {
+                console.error('Back button element not found!');
+            }
+            
+            // Add event listener for lookup button
+            const lookupBtn = document.getElementById('lookup-btn-text');
+            console.log('Lookup button element:', lookupBtn);
+            
+            if (lookupBtn) {
+                console.log('Lookup button found, adding click listener');
+            } else {
+                console.error('Lookup button element not found!');
+            }
+            
             // Reset to initial state
+            console.log('Resetting page to initial state');
             showSection('zeta-lookup-section');
             hideMessage('lookup-message');
             document.getElementById('zeta-id').value = '';
+            
+            console.log('Page initialization complete');
         });
     </script>
 </body>
