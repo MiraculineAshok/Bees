@@ -8,6 +8,7 @@ const morgan = require('morgan');
 const path = require('path');
 const request = require('request');
 const jwt = require('jsonwebtoken');
+const { upsertUser, getUserByUniqueId, getAllUsers, getUserCount } = require('./database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -181,17 +182,26 @@ app.get('/getCode', (req, res) => {
         console.log('=== END JWT DECODE ===\n');
       }
       
-      // Extract user information from JWT for redirect
+      // Extract user information from JWT for redirect and database storage
       let userEmail = null;
       let userName = null;
+      let userUniqueId = null;
       
       if (tokenData.id_token) {
         try {
           const decodedToken = jwt.decode(tokenData.id_token, { complete: true });
           if (decodedToken.payload) {
             userEmail = decodedToken.payload.email;
+            userUniqueId = decodedToken.payload.sub; // This is the unique ID from JWT
             userName = decodedToken.payload.name || decodedToken.payload.first_name || 
                       (userEmail ? userEmail.split('@')[0] : null);
+            
+            // Store user in database
+            if (userEmail && userUniqueId) {
+              console.log('💾 Storing user in database...');
+              const dbResult = upsertUser(userUniqueId, userEmail);
+              console.log('Database result:', dbResult);
+            }
           }
         } catch (jwtError) {
           console.error('Error extracting user info from JWT:', jwtError.message);
@@ -211,6 +221,72 @@ app.get('/getCode', (req, res) => {
       res.redirect('http://localhost:3000/?login=success');
     }
   });
+});
+
+// Database API endpoints
+app.get('/api/users', (req, res) => {
+  try {
+    const users = getAllUsers();
+    const userCount = getUserCount();
+    
+    res.json({
+      success: true,
+      count: userCount,
+      users: users
+    });
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch users',
+      message: error.message
+    });
+  }
+});
+
+app.get('/api/users/count', (req, res) => {
+  try {
+    const userCount = getUserCount();
+    
+    res.json({
+      success: true,
+      count: userCount
+    });
+  } catch (error) {
+    console.error('Error fetching user count:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch user count',
+      message: error.message
+    });
+  }
+});
+
+app.get('/api/users/:uniqueId', (req, res) => {
+  try {
+    const { uniqueId } = req.params;
+    const user = getUserByUniqueId(uniqueId);
+    
+    if (user) {
+      res.json({
+        success: true,
+        user: user
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: 'User not found',
+        uniqueId: uniqueId
+      });
+    }
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch user',
+      message: error.message
+    });
+  }
 });
 
 // 404 handler
@@ -236,6 +312,8 @@ app.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);
   console.log(`📍 Local: http://localhost:${PORT}`);
   console.log(`🏥 Health check: http://localhost:${PORT}/health`);
+  console.log(`👥 Users API: http://localhost:${PORT}/api/users`);
+  console.log(`📊 User count: http://localhost:${PORT}/api/users/count`);
   console.log('\n📋 Environment Configuration:');
   console.log(`  ZOHO_CLIENT_ID: ${process.env.ZOHO_CLIENT_ID ? '[SET]' : '[NOT SET]'}`);
   console.log(`  ZOHO_CLIENT_SECRET: ${process.env.ZOHO_CLIENT_SECRET ? '[SET]' : '[NOT SET]'}`);
@@ -244,6 +322,10 @@ app.listen(PORT, () => {
   console.log(`  ZOHO_AUTH_URL: ${process.env.ZOHO_AUTH_URL || '[DEFAULT]'}`);
   console.log(`  ZOHO_TOKEN_URL: ${process.env.ZOHO_TOKEN_URL || '[DEFAULT]'}`);
   console.log(`  NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
+  console.log('\n📊 Database Status:');
+  console.log(`  Database: bees.db`);
+  console.log(`  Users table: Ready`);
+  console.log(`  Current users: ${getUserCount()}`);
 });
 
 module.exports = app;
