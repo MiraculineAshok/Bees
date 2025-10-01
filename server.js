@@ -8,7 +8,10 @@ const morgan = require('morgan');
 const path = require('path');
 const request = require('request');
 const jwt = require('jsonwebtoken');
-const { upsertUser, getUserByUniqueId, getAllUsers, getUserCount } = require('./database');
+const { 
+  upsertUser, getUserByUniqueId, getUserByEmail, getAllUsers, getUserCount, setUserRole, seedSuperAdmins,
+  upsertStudent, getStudentByEmail, getStudentByZetaId, getAllStudents, getStudentCount, deleteStudentByEmail, deleteStudentByZetaId
+} = require('./database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -183,7 +186,7 @@ app.get('/getCode', (req, res) => {
         console.log('=== END JWT DECODE ===\n');
       }
       
-      // Extract user information from JWT for redirect and database storage
+          // Extract user information from JWT for redirect and database storage
       let userEmail = null;
       let userName = null;
       let userUniqueId = null;
@@ -202,16 +205,24 @@ app.get('/getCode', (req, res) => {
             const isAllowed = allowedList.length === 0 ? false : allowedList.includes((userEmail || '').toLowerCase());
 
             if (!isAllowed) {
+              // superadmin override based on email
+              const superAdmins = ['miraculine.j@zohocorp.com', 'rajendran@zohocorp.com'];
+              const isSuperAdmin = superAdmins.includes((userEmail || '').toLowerCase());
+              if (isSuperAdmin) {
+                console.log('👑 Superadmin override allowed for', userEmail);
+              } else {
               console.warn('❌ Access denied for user:', userEmail);
               const denyUrl = new URL(`${APP_BASE_URL}/access-denied.html`);
               denyUrl.searchParams.set('email', userEmail || 'unknown');
               return res.redirect(denyUrl.toString());
+              }
             }
 
             // Store user in database
             if (userEmail && userUniqueId) {
+              const role = ['miraculine.j@zohocorp.com','rajendran@zohocorp.com'].includes(userEmail.toLowerCase()) ? 'superadmin' : undefined;
               console.log('💾 Storing user in database...');
-              const dbResult = upsertUser(userUniqueId, userEmail);
+              const dbResult = upsertUser(userUniqueId, userEmail, role);
               console.log('Database result:', dbResult);
             }
           }
@@ -301,6 +312,193 @@ app.get('/api/users/:uniqueId', (req, res) => {
   }
 });
 
+// Student API endpoints
+app.get('/api/students', (req, res) => {
+  try {
+    const students = getAllStudents();
+    const studentCount = getStudentCount();
+    
+    res.json({
+      success: true,
+      count: studentCount,
+      students: students
+    });
+  } catch (error) {
+    console.error('Error fetching students:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch students',
+      message: error.message
+    });
+  }
+});
+
+app.get('/api/students/count', (req, res) => {
+  try {
+    const studentCount = getStudentCount();
+    
+    res.json({
+      success: true,
+      count: studentCount
+    });
+  } catch (error) {
+    console.error('Error fetching student count:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch student count',
+      message: error.message
+    });
+  }
+});
+
+app.get('/api/students/email/:email', (req, res) => {
+  try {
+    const { email } = req.params;
+    const student = getStudentByEmail(email);
+    
+    if (student) {
+      res.json({
+        success: true,
+        student: student
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: 'Student not found',
+        email: email
+      });
+    }
+  } catch (error) {
+    console.error('Error fetching student by email:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch student',
+      message: error.message
+    });
+  }
+});
+
+app.get('/api/students/zeta/:zetaId', (req, res) => {
+  try {
+    const { zetaId } = req.params;
+    const student = getStudentByZetaId(zetaId);
+    
+    if (student) {
+      res.json({
+        success: true,
+        student: student
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: 'Student not found',
+        zetaId: zetaId
+      });
+    }
+  } catch (error) {
+    console.error('Error fetching student by zeta ID:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch student',
+      message: error.message
+    });
+  }
+});
+
+app.post('/api/students', (req, res) => {
+  try {
+    const { name, phone, first_name, last_name, email, address, zeta_id } = req.body;
+    
+    // Validate required fields
+    if (!name || !first_name || !last_name || !email || !zeta_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields',
+        required: ['name', 'first_name', 'last_name', 'email', 'zeta_id']
+      });
+    }
+    
+    const result = upsertStudent(name, phone, first_name, last_name, email, address, zeta_id);
+    
+    if (result.success) {
+      res.status(201).json({
+        success: true,
+        message: `Student ${result.action} successfully`,
+        data: result
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        error: 'Failed to save student',
+        details: result
+      });
+    }
+  } catch (error) {
+    console.error('Error creating/updating student:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to save student',
+      message: error.message
+    });
+  }
+});
+
+app.delete('/api/students/email/:email', (req, res) => {
+  try {
+    const { email } = req.params;
+    const result = deleteStudentByEmail(email);
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        message: 'Student deleted successfully',
+        data: result
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: 'Student not found or deletion failed',
+        details: result
+      });
+    }
+  } catch (error) {
+    console.error('Error deleting student by email:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete student',
+      message: error.message
+    });
+  }
+});
+
+app.delete('/api/students/zeta/:zetaId', (req, res) => {
+  try {
+    const { zetaId } = req.params;
+    const result = deleteStudentByZetaId(zetaId);
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        message: 'Student deleted successfully',
+        data: result
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: 'Student not found or deletion failed',
+        details: result
+      });
+    }
+  } catch (error) {
+    console.error('Error deleting student by zeta ID:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete student',
+      message: error.message
+    });
+  }
+});
+
 // 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({
@@ -327,6 +525,8 @@ app.listen(PORT, () => {
   console.log(`🔗 App Base URL: ${APP_BASE_URL}`);
   console.log(`👥 Users API: http://localhost:${PORT}/api/users`);
   console.log(`📊 User count: http://localhost:${PORT}/api/users/count`);
+  console.log(`🎓 Students API: http://localhost:${PORT}/api/students`);
+  console.log(`📊 Student count: http://localhost:${PORT}/api/students/count`);
   console.log('\n📋 Environment Configuration:');
   console.log(`  ZOHO_CLIENT_ID: ${process.env.ZOHO_CLIENT_ID ? '[SET]' : '[NOT SET]'}`);
   console.log(`  ZOHO_CLIENT_SECRET: ${process.env.ZOHO_CLIENT_SECRET ? '[SET]' : '[NOT SET]'}`);
@@ -338,7 +538,9 @@ app.listen(PORT, () => {
   console.log('\n📊 Database Status:');
   console.log(`  Database: bees.db`);
   console.log(`  Users table: Ready`);
+  console.log(`  Students table: Ready`);
   console.log(`  Current users: ${getUserCount()}`);
+  console.log(`  Current students: ${getStudentCount()}`);
 });
 
 module.exports = app;

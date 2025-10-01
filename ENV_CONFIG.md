@@ -24,6 +24,7 @@ This document lists all the environment variables used in the Zoho OAuth integra
 ### Optional Parameters
 - `ZOHO_COOKIE_HEADER` - Cookie header for session management
  - `ALLOWED_EMAILS` - Comma-separated list of emails allowed to access the app (e.g., "miraculine.j@zohocorp.com,rajendran@zohocorp.com"). If unset or empty, no users are allowed.
+   - Note: `miraculine.j@zohocorp.com` and `rajendran@zohocorp.com` are always allowed as superadmins regardless of this list.
 
 ### Server Configuration
 - `PORT` - Server port (default: 3000)
@@ -44,6 +45,11 @@ ZOHO_REDIRECT_URL=${APP_BASE_URL}/getCode
 
 # Allowlist configuration
 ALLOWED_EMAILS=miraculine.j@zohocorp.com,rajendran@zohocorp.com
+
+# Database
+# For Render persistent storage, set DB_PATH to a mounted disk path, e.g., /var/data/bees.db
+# Locally it defaults to ./bees.db in the project directory.
+DB_PATH=/var/data/bees.db
 ZOHO_SCOPE=email
 ZOHO_RESPONSE_TYPE=code
 ZOHO_ACCESS_TYPE=offline
