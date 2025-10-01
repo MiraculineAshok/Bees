@@ -197,6 +197,17 @@ app.get('/getCode', (req, res) => {
             userName = decodedToken.payload.name || decodedToken.payload.first_name || 
                       (userEmail ? userEmail.split('@')[0] : null);
             
+            // Allowlist check (env ALLOWED_EMAILS as comma-separated list)
+            const allowedList = (process.env.ALLOWED_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+            const isAllowed = allowedList.length === 0 ? false : allowedList.includes((userEmail || '').toLowerCase());
+
+            if (!isAllowed) {
+              console.warn('❌ Access denied for user:', userEmail);
+              const denyUrl = new URL(`${APP_BASE_URL}/access-denied.html`);
+              denyUrl.searchParams.set('email', userEmail || 'unknown');
+              return res.redirect(denyUrl.toString());
+            }
+
             // Store user in database
             if (userEmail && userUniqueId) {
               console.log('💾 Storing user in database...');
