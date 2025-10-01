@@ -1,4 +1,11 @@
 // Client-side JavaScript for Bees Interview Platform
+
+// Function to start interview - redirect to interview page (global function)
+function startInterview() {
+    console.log('Starting interview...');
+    window.location.href = '/interview';
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Bees Interview Platform loaded successfully');
     
@@ -140,8 +147,3 @@ document.addEventListener('DOMContentLoaded', function() {
     // Log when the page is fully loaded
     console.log('All event listeners attached successfully');
 });
-
-// Function to start interview - redirect to interview page
-function startInterview() {
-    window.location.href = '/interview';
-}
