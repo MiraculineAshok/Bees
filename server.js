@@ -53,7 +53,7 @@ app.get('/authredirction', (req, res) => {
   // Get all OAuth parameters from environment variables with fallbacks
   const clientId = process.env.ZOHO_CLIENT_ID || '1000.9OLXK925B3ZYBG3SXCSQSX5WYS251A';
   const clientSecret = process.env.ZOHO_CLIENT_SECRET || '';
-  const redirectUrl = process.env.ZOHO_REDIRECT_URL || 'https://bees-dgqz.onrender.com/getCode';
+  const redirectUrl = process.env.ZOHO_REDIRECT_URL || 'http://localhost:3000/getCode';
   const scope = process.env.ZOHO_SCOPE || 'email';
   const responseType = process.env.ZOHO_RESPONSE_TYPE || 'code';
   const accessType = process.env.ZOHO_ACCESS_TYPE || 'offline';
@@ -118,7 +118,7 @@ app.get('/getCode', (req, res) => {
   // Get OAuth parameters from environment variables
   const clientId = process.env.ZOHO_CLIENT_ID || '1000.9OLXK925B3ZYBG3SXCSQSX5WYS251A';
   const clientSecret = process.env.ZOHO_CLIENT_SECRET || '112e208ce2abddeac835b26d228580362477ba9653';
-  const redirectUrl = process.env.ZOHO_REDIRECT_URL || 'https://bees-dgqz.onrender.com/getCode';
+  const redirectUrl = process.env.ZOHO_REDIRECT_URL || 'http://localhost:3000/getCode';
   const grantType = process.env.ZOHO_GRANT_TYPE || 'authorization_code';
   const zohoTokenUrl = process.env.ZOHO_TOKEN_URL || 'https://accounts.zoho.in/oauth/v2/token';
   const cookieHeader = process.env.ZOHO_COOKIE_HEADER || 'iamcsr=57700fb3-ff9f-4fac-8c09-656eb8a2576b; zalb_6e73717622=680d8e643c8d4f4ecb79bf7c0a6012e8';
@@ -198,17 +198,17 @@ app.get('/getCode', (req, res) => {
         }
       }
       
-      // Redirect back to Render deployment with user information
-      const redirectUrl = new URL('https://bees-dgqz.onrender.com/');
+      // Redirect back to landing page with user information
+      const redirectUrl = new URL('http://localhost:3000/');
       if (userEmail) redirectUrl.searchParams.set('email', userEmail);
       if (userName) redirectUrl.searchParams.set('name', userName);
       
-      console.log('Redirecting user back to Render deployment with info:', { userEmail, userName });
+      console.log('Redirecting user back to landing page with info:', { userEmail, userName });
       res.redirect(redirectUrl.toString());
     } catch (parseError) {
       console.error('Error parsing token response:', parseError);
-      // Even if parsing fails, try to redirect back to Render deployment
-      res.redirect('https://bees-dgqz.onrender.com/?login=success');
+      // Even if parsing fails, try to redirect back to landing page
+      res.redirect('http://localhost:3000/?login=success');
     }
   });
 });
