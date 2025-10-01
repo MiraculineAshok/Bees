@@ -53,7 +53,7 @@ app.get('/authredirction', (req, res) => {
   
   // Get all OAuth parameters from environment variables with fallbacks
   const clientId = process.env.ZOHO_CLIENT_ID || '1000.9OLXK925B3ZYBG3SXCSQSX5WYS251A';
-  const clientSecret = process.env.ZOHO_CLIENT_SECRET || '';
+  const clientSecret = process.env.ZOHO_CLIENT_SECRET || '112e208ce2abddeac835b26d228580362477ba9653';
   const redirectUrl = process.env.ZOHO_REDIRECT_URL || 'https://bees-dgqz.onrender.com/getCode';
   const scope = process.env.ZOHO_SCOPE || 'email';
   const responseType = process.env.ZOHO_RESPONSE_TYPE || 'code';
