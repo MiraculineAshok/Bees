@@ -181,17 +181,34 @@ app.get('/getCode', (req, res) => {
         console.log('=== END JWT DECODE ===\n');
       }
       
-      res.json({
-        success: true,
-        message: 'Successfully exchanged authorization code for token',
-        data: tokenData
-      });
+      // Extract user information from JWT for redirect
+      let userEmail = null;
+      let userName = null;
+      
+      if (tokenData.id_token) {
+        try {
+          const decodedToken = jwt.decode(tokenData.id_token, { complete: true });
+          if (decodedToken.payload) {
+            userEmail = decodedToken.payload.email;
+            userName = decodedToken.payload.name || decodedToken.payload.first_name || 
+                      (userEmail ? userEmail.split('@')[0] : null);
+          }
+        } catch (jwtError) {
+          console.error('Error extracting user info from JWT:', jwtError.message);
+        }
+      }
+      
+      // Redirect back to landing page with user information
+      const redirectUrl = new URL('http://localhost:3000/');
+      if (userEmail) redirectUrl.searchParams.set('email', userEmail);
+      if (userName) redirectUrl.searchParams.set('name', userName);
+      
+      console.log('Redirecting user back to landing page with info:', { userEmail, userName });
+      res.redirect(redirectUrl.toString());
     } catch (parseError) {
-      res.json({
-        success: true,
-        message: 'Token exchange completed',
-        rawResponse: response.body
-      });
+      console.error('Error parsing token response:', parseError);
+      // Even if parsing fails, try to redirect back to landing page
+      res.redirect('http://localhost:3000/?login=success');
     }
   });
 });
