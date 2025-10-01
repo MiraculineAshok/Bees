@@ -42,12 +42,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const userNameElement = document.getElementById('user-name');
         const loginBtn = document.getElementById('login-btn');
         const ctaBtn = document.getElementById('cta-login-btn');
+        const startInterviewBtn = document.getElementById('start-interview-btn');
         const interviewDashboard = document.getElementById('interview-dashboard');
         
         if (userData && userData.name) {
-            // Show user name and hide login button
+            // Show user name and start interview button, hide login button
             userNameElement.textContent = `Welcome, ${userData.name}`;
             userNameElement.classList.remove('hidden');
+            startInterviewBtn.classList.remove('hidden');
             loginBtn.classList.add('hidden');
             ctaBtn.classList.add('hidden');
             

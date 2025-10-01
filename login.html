@@ -74,6 +74,23 @@
             transform: translateY(-2px);
         }
         
+        .start-interview-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+        
+        .start-interview-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        
         .main-container {
             max-width: 1200px;
             margin: 0 auto;
@@ -288,6 +305,7 @@
             <a href="/" class="logo">🐝 Bees</a>
             <div class="user-info">
                 <span id="user-name" class="user-name hidden"></span>
+                <button id="start-interview-btn" class="start-interview-btn hidden" onclick="startInterview()">Start Interview</button>
                 <button id="login-btn" class="login-btn">Sign in with Zoho</button>
             </div>
         </div>
