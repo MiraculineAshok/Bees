@@ -12,6 +12,7 @@ const { upsertUser, getUserByUniqueId, getAllUsers, getUserCount } = require('./
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const APP_BASE_URL = process.env.APP_BASE_URL || 'https://bees-dgqz.onrender.com';
 
 // Middleware
 app.use(helmet()); // Security headers
@@ -54,7 +55,7 @@ app.get('/authredirction', (req, res) => {
   // Get all OAuth parameters from environment variables with fallbacks
   const clientId = process.env.ZOHO_CLIENT_ID || '1000.9OLXK925B3ZYBG3SXCSQSX5WYS251A';
   const clientSecret = process.env.ZOHO_CLIENT_SECRET || '112e208ce2abddeac835b26d228580362477ba9653';
-  const redirectUrl = process.env.ZOHO_REDIRECT_URL || 'http://localhost:3000/getCode';
+  const redirectUrl = process.env.ZOHO_REDIRECT_URL || `${APP_BASE_URL}/getCode`;
   const scope = process.env.ZOHO_SCOPE || 'email';
   const responseType = process.env.ZOHO_RESPONSE_TYPE || 'code';
   const accessType = process.env.ZOHO_ACCESS_TYPE || 'offline';
@@ -119,7 +120,7 @@ app.get('/getCode', (req, res) => {
   // Get OAuth parameters from environment variables
   const clientId = process.env.ZOHO_CLIENT_ID || '1000.9OLXK925B3ZYBG3SXCSQSX5WYS251A';
   const clientSecret = process.env.ZOHO_CLIENT_SECRET || '112e208ce2abddeac835b26d228580362477ba9653';
-  const redirectUrl = process.env.ZOHO_REDIRECT_URL || 'http://localhost:3000/getCode';
+  const redirectUrl = process.env.ZOHO_REDIRECT_URL || `${APP_BASE_URL}/getCode`;
   const grantType = process.env.ZOHO_GRANT_TYPE || 'authorization_code';
   const zohoTokenUrl = process.env.ZOHO_TOKEN_URL || 'https://accounts.zoho.in/oauth/v2/token';
   const cookieHeader = process.env.ZOHO_COOKIE_HEADER || 'iamcsr=57700fb3-ff9f-4fac-8c09-656eb8a2576b; zalb_6e73717622=680d8e643c8d4f4ecb79bf7c0a6012e8';
@@ -209,7 +210,7 @@ app.get('/getCode', (req, res) => {
       }
       
       // Redirect back to landing page with user information
-      const redirectUrl = new URL('http://localhost:3000/');
+      const redirectUrl = new URL(`${APP_BASE_URL}/`);
       if (userEmail) redirectUrl.searchParams.set('email', userEmail);
       if (userName) redirectUrl.searchParams.set('name', userName);
       
@@ -218,7 +219,7 @@ app.get('/getCode', (req, res) => {
     } catch (parseError) {
       console.error('Error parsing token response:', parseError);
       // Even if parsing fails, try to redirect back to landing page
-      res.redirect('http://localhost:3000/?login=success');
+      res.redirect(`${APP_BASE_URL}/?login=success`);
     }
   });
 });
@@ -312,12 +313,13 @@ app.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);
   console.log(`📍 Local: http://localhost:${PORT}`);
   console.log(`🏥 Health check: http://localhost:${PORT}/health`);
+  console.log(`🔗 App Base URL: ${APP_BASE_URL}`);
   console.log(`👥 Users API: http://localhost:${PORT}/api/users`);
   console.log(`📊 User count: http://localhost:${PORT}/api/users/count`);
   console.log('\n📋 Environment Configuration:');
   console.log(`  ZOHO_CLIENT_ID: ${process.env.ZOHO_CLIENT_ID ? '[SET]' : '[NOT SET]'}`);
   console.log(`  ZOHO_CLIENT_SECRET: ${process.env.ZOHO_CLIENT_SECRET ? '[SET]' : '[NOT SET]'}`);
-  console.log(`  ZOHO_REDIRECT_URL: ${process.env.ZOHO_REDIRECT_URL || '[DEFAULT]'}`);
+  console.log(`  ZOHO_REDIRECT_URL: ${process.env.ZOHO_REDIRECT_URL || `${APP_BASE_URL}/getCode`}`);
   console.log(`  ZOHO_SCOPE: ${process.env.ZOHO_SCOPE || '[DEFAULT]'}`);
   console.log(`  ZOHO_AUTH_URL: ${process.env.ZOHO_AUTH_URL || '[DEFAULT]'}`);
   console.log(`  ZOHO_TOKEN_URL: ${process.env.ZOHO_TOKEN_URL || '[DEFAULT]'}`);

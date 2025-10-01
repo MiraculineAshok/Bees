@@ -27,6 +27,7 @@ This document lists all the environment variables used in the Zoho OAuth integra
 ### Server Configuration
 - `PORT` - Server port (default: 3000)
 - `NODE_ENV` - Environment (default: "development")
+- `APP_BASE_URL` - Base URL of your app (default: https://bees-dgqz.onrender.com)
 
 ## Example .env File
 
@@ -34,7 +35,11 @@ This document lists all the environment variables used in the Zoho OAuth integra
 # Zoho OAuth Configuration
 ZOHO_CLIENT_ID=1000.9OLXK925B3ZYBG3SXCSQSX5WYS251A
 ZOHO_CLIENT_SECRET=112e208ce2abddeac835b26d228580362477ba9653
-ZOHO_REDIRECT_URL=http://localhost:3000/getCode
+# Base app URL
+APP_BASE_URL=https://bees-dgqz.onrender.com
+
+# Zoho redirect URI (can be omitted to use ${APP_BASE_URL}/getCode)
+ZOHO_REDIRECT_URL=${APP_BASE_URL}/getCode
 ZOHO_SCOPE=email
 ZOHO_RESPONSE_TYPE=code
 ZOHO_ACCESS_TYPE=offline
