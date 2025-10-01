@@ -209,7 +209,7 @@ app.get('/getCode', (req, res) => {
       }
       
       // Redirect back to landing page with user information
-      const redirectUrl = new URL('http://localhost:3000/');
+      const redirectUrl = new URL('https://bees-dgqz.onrender.com/');
       if (userEmail) redirectUrl.searchParams.set('email', userEmail);
       if (userName) redirectUrl.searchParams.set('name', userName);
       
@@ -218,7 +218,7 @@ app.get('/getCode', (req, res) => {
     } catch (parseError) {
       console.error('Error parsing token response:', parseError);
       // Even if parsing fails, try to redirect back to landing page
-      res.redirect('http://localhost:3000/?login=success');
+      res.redirect('https://bees-dgqz.onrender.com/?login=success');
     }
   });
 });
