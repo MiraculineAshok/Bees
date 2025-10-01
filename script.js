@@ -1,19 +1,21 @@
 // Client-side JavaScript for Bees Interview Platform
 
-// Function to start interview - redirect to interview page (global function)
-function startInterview() {
-    console.log('Starting interview...');
-    console.log('Current URL:', window.location.href);
-    console.log('Redirecting to /interview...');
-    
-    // Add a small delay to see the console message
-    setTimeout(() => {
-        window.location.href = '/interview';
-    }, 100);
-}
-
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Bees Interview Platform loaded successfully');
+    
+    // Function to start interview - redirect to interview page (defined inside DOMContentLoaded)
+    window.startInterview = function() {
+        console.log('Starting interview...');
+        console.log('Current URL:', window.location.href);
+        console.log('Redirecting to /interview...');
+        
+        // Add a small delay to see the console message
+        setTimeout(() => {
+            window.location.href = '/interview';
+        }, 100);
+    };
+    
+    console.log('startInterview function attached to window object:', typeof window.startInterview);
     
     // Check if user is already logged in (from URL parameters or localStorage)
     checkUserLoginStatus();
@@ -169,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (startInterviewBtn) {
         startInterviewBtn.addEventListener('click', function() {
             console.log('Header start interview button clicked');
-            startInterview();
+            window.startInterview();
         });
     }
     
@@ -177,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (testStartInterviewBtn) {
         testStartInterviewBtn.addEventListener('click', function() {
             console.log('Test start interview button clicked');
-            startInterview();
+            window.startInterview();
         });
     }
     
@@ -185,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (dashboardStartInterview) {
         dashboardStartInterview.addEventListener('click', function() {
             console.log('Dashboard start interview button clicked');
-            startInterview();
+            window.startInterview();
         });
     }
     
