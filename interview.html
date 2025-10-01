@@ -195,7 +195,7 @@
                 <label for="zeta-id">Zeta ID:</label>
                 <input type="text" id="zeta-id" placeholder="Enter student's Zeta ID" required>
             </div>
-            <button class="btn" onclick="lookupStudent()">
+            <button class="btn" id="lookup-student-btn">
                 <span id="lookup-btn-text">Lookup Student</span>
                 <span id="lookup-loading" class="loading hidden"></span>
             </button>
@@ -206,8 +206,8 @@
         <div id="student-info-section" class="hidden">
             <h2 style="margin-bottom: 20px; color: #333;">Student Information</h2>
             <div id="student-details" class="student-info"></div>
-            <button class="btn" onclick="startInterview()">Start Interview</button>
-            <button class="btn btn-secondary" onclick="resetLookup()">Lookup Another Student</button>
+            <button class="btn" id="start-interview-from-info-btn">Start Interview</button>
+            <button class="btn btn-secondary" id="reset-lookup-btn">Lookup Another Student</button>
         </div>
 
         <!-- Student Registration Form -->
@@ -461,13 +461,45 @@
             }
             
             // Add event listener for lookup button
-            const lookupBtn = document.getElementById('lookup-btn-text');
-            console.log('Lookup button element:', lookupBtn);
+            const lookupStudentBtn = document.getElementById('lookup-student-btn');
+            console.log('Lookup student button element:', lookupStudentBtn);
             
-            if (lookupBtn) {
-                console.log('Lookup button found, adding click listener');
+            if (lookupStudentBtn) {
+                lookupStudentBtn.addEventListener('click', function() {
+                    console.log('Lookup student button clicked');
+                    lookupStudent();
+                });
+                console.log('Lookup student button event listener added');
             } else {
-                console.error('Lookup button element not found!');
+                console.error('Lookup student button element not found!');
+            }
+            
+            // Add event listener for start interview button (from student info)
+            const startInterviewFromInfoBtn = document.getElementById('start-interview-from-info-btn');
+            console.log('Start interview from info button element:', startInterviewFromInfoBtn);
+            
+            if (startInterviewFromInfoBtn) {
+                startInterviewFromInfoBtn.addEventListener('click', function() {
+                    console.log('Start interview from info button clicked');
+                    window.location.href = '/interview'; // or call startInterview if available
+                });
+                console.log('Start interview from info button event listener added');
+            } else {
+                console.error('Start interview from info button element not found!');
+            }
+            
+            // Add event listener for reset lookup button
+            const resetLookupBtn = document.getElementById('reset-lookup-btn');
+            console.log('Reset lookup button element:', resetLookupBtn);
+            
+            if (resetLookupBtn) {
+                resetLookupBtn.addEventListener('click', function() {
+                    console.log('Reset lookup button clicked');
+                    resetLookup();
+                });
+                console.log('Reset lookup button event listener added');
+            } else {
+                console.error('Reset lookup button element not found!');
             }
             
             // Reset to initial state
