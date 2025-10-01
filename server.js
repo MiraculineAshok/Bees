@@ -1,0 +1,232 @@
+// Load environment variables from .env file
+require('dotenv').config();
+
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const path = require('path');
+const request = require('request');
+const jwt = require('jsonwebtoken');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.use(helmet()); // Security headers
+app.use(cors()); // Enable CORS
+app.use(morgan('combined')); // Logging
+app.use(express.json()); // Parse JSON bodies
+app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+app.use(express.static(path.join(__dirname))); // Serve static files
+
+// Routes
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'login.html'));
+});
+
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/api/hello', (req, res) => {
+  res.json({
+    message: 'Hello from the API!',
+    data: {
+      version: '1.0.0',
+      environment: process.env.NODE_ENV || 'development'
+    }
+  });
+});
+
+// Zoho OAuth endpoints
+app.get('/authredirction', (req, res) => {
+  console.log('=== /authredirction API Called ===');
+  console.log('Request headers:', req.headers);
+  console.log('Request method:', req.method);
+  console.log('Request URL:', req.url);
+  
+  // Get all OAuth parameters from environment variables with fallbacks
+  const clientId = process.env.ZOHO_CLIENT_ID || '1000.9OLXK925B3ZYBG3SXCSQSX5WYS251A';
+  const clientSecret = process.env.ZOHO_CLIENT_SECRET || '';
+  const redirectUrl = process.env.ZOHO_REDIRECT_URL || 'http://localhost:3000/getCode';
+  const scope = process.env.ZOHO_SCOPE || 'email';
+  const responseType = process.env.ZOHO_RESPONSE_TYPE || 'code';
+  const accessType = process.env.ZOHO_ACCESS_TYPE || 'offline';
+  const prompt = process.env.ZOHO_PROMPT || 'consent';
+  const state = process.env.ZOHO_STATE || req.query.state || 'default-state';
+  const zohoAuthUrl = process.env.ZOHO_AUTH_URL || 'https://accounts.zoho.in/oauth/v2/auth';
+  const zohoTokenUrl = process.env.ZOHO_TOKEN_URL || 'https://accounts.zoho.in/oauth/v2/token';
+  
+  // URL encode the parameters (equivalent to Java's URLEncoder.encode)
+  const encodedClientId = encodeURIComponent(clientId);
+  const encodedRedirectUrl = encodeURIComponent(redirectUrl);
+  const encodedScope = encodeURIComponent(scope);
+  const encodedState = encodeURIComponent(state);
+  
+  // Build the auth URL with all parameters
+  const authUrl = zohoAuthUrl
+    + '?response_type=' + responseType
+    + '&client_id=' + encodedClientId
+    + '&scope=' + encodedScope
+    + '&redirect_uri=' + encodedRedirectUrl
+    + '&access_type=' + accessType
+    + '&prompt=' + prompt
+    + '&state=' + encodedState;
+  
+  console.log('Generated auth URL:', authUrl);
+  console.log('OAuth Configuration:');
+  console.log('  Client ID:', clientId);
+  console.log('  Client Secret:', clientSecret ? '[SET]' : '[NOT SET]');
+  console.log('  Redirect URL:', redirectUrl);
+  console.log('  Scope:', scope);
+  console.log('  Response Type:', responseType);
+  console.log('  Access Type:', accessType);
+  console.log('  Prompt:', prompt);
+  console.log('  State:', state);
+  console.log('  Auth URL:', zohoAuthUrl);
+  console.log('  Token URL:', zohoTokenUrl);
+  
+  // Set 302 redirect status and Location header (equivalent to your Java code)
+  res.status(302);
+  res.setHeader('Location', authUrl);
+  res.end();
+});
+//--------------------------------getCode--------------------------------
+app.get('/getCode', (req, res) => {
+  const { code } = req.query;
+  
+  console.log('=== /getCode API Called ===');
+  console.log('Received code parameter:', code);
+  console.log('Full query parameters:', req.query);
+  console.log('Request headers:', req.headers);
+  
+  if (!code) {
+    console.log('ERROR: No authorization code received');
+    return res.status(400).json({
+      error: 'Authorization code is required',
+      message: 'No authorization code received from Zoho'
+    });
+  }
+  
+  console.log('✅ Authorization code received successfully:', code);
+
+  // Get OAuth parameters from environment variables
+  const clientId = process.env.ZOHO_CLIENT_ID || '1000.9OLXK925B3ZYBG3SXCSQSX5WYS251A';
+  const clientSecret = process.env.ZOHO_CLIENT_SECRET || '112e208ce2abddeac835b26d228580362477ba9653';
+  const redirectUrl = process.env.ZOHO_REDIRECT_URL || 'http://localhost:3000/getCode';
+  const grantType = process.env.ZOHO_GRANT_TYPE || 'authorization_code';
+  const zohoTokenUrl = process.env.ZOHO_TOKEN_URL || 'https://accounts.zoho.in/oauth/v2/token';
+  const cookieHeader = process.env.ZOHO_COOKIE_HEADER || 'iamcsr=57700fb3-ff9f-4fac-8c09-656eb8a2576b; zalb_6e73717622=680d8e643c8d4f4ecb79bf7c0a6012e8';
+
+  const options = {
+    'method': 'POST',
+    'url': zohoTokenUrl,
+    'headers': {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Cookie': cookieHeader
+    },
+    form: {
+      'client_id': clientId,
+      'client_secret': clientSecret,
+      'grant_type': grantType,
+      'redirect_uri': redirectUrl,
+      'code': code
+    }
+  };
+
+  request(options, function (error, response) {
+    if (error) {
+      console.error('Error making token request:', error);
+      return res.status(500).json({
+        error: 'Failed to exchange authorization code for token',
+        details: error.message
+      });
+    }
+    
+    console.log('Token response:', response.body);
+    
+    try {
+      const tokenData = JSON.parse(response.body);
+      
+      // Decode and console the JWT id_token if it exists
+      if (tokenData.id_token) {
+        console.log('\n=== JWT ID TOKEN DECODED ===');
+        try {
+          // Decode the JWT without verification (since we don't have the public key)
+          const decodedToken = jwt.decode(tokenData.id_token, { complete: true });
+          
+          console.log('JWT Header:', JSON.stringify(decodedToken.header, null, 2));
+          console.log('JWT Payload:', JSON.stringify(decodedToken.payload, null, 2));
+          
+          // Extract user information from the payload
+          if (decodedToken.payload) {
+            console.log('\n=== USER INFORMATION ===');
+            console.log('User ID (sub):', decodedToken.payload.sub);
+            console.log('Email:', decodedToken.payload.email);
+            console.log('Email Verified:', decodedToken.payload.email_verified);
+            console.log('Issuer:', decodedToken.payload.iss);
+            console.log('Audience:', decodedToken.payload.aud);
+            console.log('Issued At:', new Date(decodedToken.payload.iat * 1000).toISOString());
+            console.log('Expires At:', new Date(decodedToken.payload.exp * 1000).toISOString());
+            console.log('Token Type:', decodedToken.payload.token_type || 'JWT');
+          }
+        } catch (jwtError) {
+          console.error('Error decoding JWT:', jwtError.message);
+        }
+        console.log('=== END JWT DECODE ===\n');
+      }
+      
+      res.json({
+        success: true,
+        message: 'Successfully exchanged authorization code for token',
+        data: tokenData
+      });
+    } catch (parseError) {
+      res.json({
+        success: true,
+        message: 'Token exchange completed',
+        rawResponse: response.body
+      });
+    }
+  });
+});
+
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({
+    error: 'Route not found',
+    path: req.originalUrl,
+    method: req.method
+  });
+});
+
+// Error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    error: 'Something went wrong!',
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
+  });
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Server is running on port ${PORT}`);
+  console.log(`📍 Local: http://localhost:${PORT}`);
+  console.log(`🏥 Health check: http://localhost:${PORT}/health`);
+  console.log('\n📋 Environment Configuration:');
+  console.log(`  ZOHO_CLIENT_ID: ${process.env.ZOHO_CLIENT_ID ? '[SET]' : '[NOT SET]'}`);
+  console.log(`  ZOHO_CLIENT_SECRET: ${process.env.ZOHO_CLIENT_SECRET ? '[SET]' : '[NOT SET]'}`);
+  console.log(`  ZOHO_REDIRECT_URL: ${process.env.ZOHO_REDIRECT_URL || '[DEFAULT]'}`);
+  console.log(`  ZOHO_SCOPE: ${process.env.ZOHO_SCOPE || '[DEFAULT]'}`);
+  console.log(`  ZOHO_AUTH_URL: ${process.env.ZOHO_AUTH_URL || '[DEFAULT]'}`);
+  console.log(`  ZOHO_TOKEN_URL: ${process.env.ZOHO_TOKEN_URL || '[DEFAULT]'}`);
+  console.log(`  NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
+});
+
+module.exports = app;
