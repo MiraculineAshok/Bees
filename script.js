@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Show success message
-            showStatus(`Welcome back, ${userData.name}! Ready to start interviewing?`, 'success');
+            showStatus(`Welcome back, ${userData.name}!`, 'success');
             
             console.log('User logged in:', userData);
         }
@@ -175,13 +175,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    const testStartInterviewBtn = document.getElementById('test-start-interview-btn');
-    if (testStartInterviewBtn) {
-        testStartInterviewBtn.addEventListener('click', function() {
-            console.log('Test start interview button clicked');
-            window.startInterview();
-        });
-    }
     
     const dashboardStartInterview = document.getElementById('dashboard-start-interview');
     if (dashboardStartInterview) {
