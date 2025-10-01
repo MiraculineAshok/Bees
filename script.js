@@ -164,6 +164,31 @@ document.addEventListener('DOMContentLoaded', function() {
         userNameElement.title = 'Click to logout';
     }
     
+    // Add event listeners for start interview buttons
+    const startInterviewBtn = document.getElementById('start-interview-btn');
+    if (startInterviewBtn) {
+        startInterviewBtn.addEventListener('click', function() {
+            console.log('Header start interview button clicked');
+            startInterview();
+        });
+    }
+    
+    const testStartInterviewBtn = document.getElementById('test-start-interview-btn');
+    if (testStartInterviewBtn) {
+        testStartInterviewBtn.addEventListener('click', function() {
+            console.log('Test start interview button clicked');
+            startInterview();
+        });
+    }
+    
+    const dashboardStartInterview = document.getElementById('dashboard-start-interview');
+    if (dashboardStartInterview) {
+        dashboardStartInterview.addEventListener('click', function() {
+            console.log('Dashboard start interview button clicked');
+            startInterview();
+        });
+    }
+    
     // Log when the page is fully loaded
     console.log('All event listeners attached successfully');
 });

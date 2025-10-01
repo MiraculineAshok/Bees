@@ -305,7 +305,7 @@
             <a href="/" class="logo">🐝 Bees</a>
             <div class="user-info">
                 <span id="user-name" class="user-name hidden"></span>
-                <button id="start-interview-btn" class="start-interview-btn hidden" onclick="startInterview()">Start Interview</button>
+                <button id="start-interview-btn" class="start-interview-btn hidden">Start Interview</button>
                 <button id="login-btn" class="login-btn">Sign in with Zoho</button>
             </div>
         </div>
@@ -317,7 +317,7 @@
             <p class="hero-subtitle">Face to Face Interview Platform</p>
             
             <!-- Temporary test button -->
-            <button onclick="startInterview()" style="background: #ff6b6b; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin: 20px; cursor: pointer;">
+            <button id="test-start-interview-btn" style="background: #ff6b6b; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin: 20px; cursor: pointer;">
                 🧪 TEST: Start Interview
             </button>
             <p class="hero-description">
@@ -383,7 +383,7 @@
                 Welcome back! Ready to conduct your next interview?
             </p>
             <div class="dashboard-actions">
-                <div class="action-card" onclick="startInterview()">
+                <div class="action-card" id="dashboard-start-interview">
                     <div class="action-icon">🎬</div>
                     <h3 class="action-title">Start New Interview</h3>
                     <p class="action-description">
